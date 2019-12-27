@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Customers</title>
+    <title>List</title>
 </head>
 <body>
     {% for customer in customers %}
-        <li>{{customer.first_name}} | {{customer.last_name}} | {{customer.age}} | {{customer.date_of_birth}}</li>
+        <li>{{customer.user.first_name}} | {{customer.user.last_name}} | {{customer.age}} | {{customer.date_of_birth}}</li>
     {% endfor %}
 </body>
 </html>
