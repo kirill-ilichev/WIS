@@ -1,9 +1,11 @@
+from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
 from django.views.generic import View, TemplateView
 
+from customers_app.forms import CustomerForm,  UserCustomerForm, LoginForm
+from customers_app.helpers import is_passwords_match
 from customers_app.models import Customer
-from customers_app.forms import UserForm, CustomerForm,  UserCustomerForm
 
 
 class CustomersListView(TemplateView):
@@ -36,7 +38,7 @@ class CustomersCreateView(View):
 
         customer_form = CustomerForm(request.POST)
         if user_form.is_valid() and customer_form.is_valid():
-            if user_form.is_passwords_match():
+            if is_passwords_match(user_form):
                 user_cleaned_data = user_form.cleaned_data
                 user_cleaned_data.pop('confirm_password')
 
@@ -52,17 +54,25 @@ class CustomersCreateView(View):
 
 class CustomersAuthView(View):
     template_name = 'customers_auth.html'
-    form_class = UserForm
+    form_class = LoginForm
 
     def get(self, request, *args, **kwargs):
         form = self.form_class
         return render(request, self.template_name, {'form': form})
 
     def post(self, request, *args, **kwargs):
-        user_form = UserForm(request.POST)
-        if user_form.is_user_exist():
-            if user_form.is_passwords_match():
-                if user_form.is_password_correct():
-                    pass
+        user_form = LoginForm(request.POST)
+        if user_form.is_valid():
+            if is_passwords_match(user_form):
+                cd = user_form.cleaned_data
+                user = authenticate(username=cd['username'], password=cd['password'])
+                if user:
+                    login(request, user)
+                    return redirect('customers-list')
+                else:
+                    msg = 'Invalid login or password'
+                    user_form.errors['username'] = user_form.error_class([msg])
+
+                    del cd['username']
 
         return render(request, self.template_name, {'form': user_form})
