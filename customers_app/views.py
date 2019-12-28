@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect
 from django.views.generic import View, TemplateView
 
 from customers_app.forms import CustomerForm,  UserCustomerForm, LoginForm
-from customers_app.helpers import is_passwords_match
+from customers_app.helpers import is_passwords_match, sort_customers
 from customers_app.models import Customer
 
 
@@ -13,14 +13,32 @@ class CustomersListView(TemplateView):
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
-        
         customers = Customer.objects.all()
-        query_filter = self.request.GET.get('filter', None)
-        if query_filter:
-            customers = customers.order_by('-{}'.format(query_filter))
+
+        if self.request.method == 'GET':
+            field_for_ordering = self.request.GET.get('filter', None)
+            if field_for_ordering:
+                sorted_customers = sort_customers(field_for_ordering, customers)
+                if sorted_customers:
+                    context['customers'] = sorted_customers
+                    return context
+
+        if self.request.method == 'POST':
+            first_name = self.request.POST.get('first_name', None)
+            last_name = self.request.POST.get('last_name', None)
+            if first_name and last_name:
+                customers = customers.filter(user__first_name=first_name, user__last_name=last_name)
+            elif first_name:
+                customers = customers.filter(user__first_name=first_name)
+            elif last_name:
+                customers = customers.filter(user__last_name=last_name)
 
         context['customers'] = customers
         return context
+
+    def post(self, request, *args, **kwargs):
+        context = self.get_context_data(**kwargs)
+        return self.render_to_response(context)
 
 
 class CustomersCreateView(View):
@@ -71,8 +89,6 @@ class CustomersAuthView(View):
                     return redirect('customers-list')
                 else:
                     msg = 'Invalid login or password'
-                    user_form.errors['username'] = user_form.error_class([msg])
-
-                    del cd['username']
+                    user_form.errors['__all__'] = user_form.error_class([msg])
 
         return render(request, self.template_name, {'form': user_form})
