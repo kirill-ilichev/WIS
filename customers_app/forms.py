@@ -1,6 +1,5 @@
 from django import forms
 from django.contrib.auth.models import User
-from django.contrib.admin.widgets import AdminDateWidget
 
 from customers_app.models import Customer
 
@@ -29,6 +28,3 @@ class CustomerForm(forms.ModelForm):
     class Meta:
         model = Customer
         fields = ['age', 'date_of_birth', 'photo']
-        widgets = {
-            'date_of_birth': AdminDateWidget()
-        }

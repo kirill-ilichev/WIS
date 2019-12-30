@@ -26,6 +26,7 @@ class CustomersListView(TemplateView):
         if self.request.method == 'POST':
             first_name = self.request.POST.get('first_name', None)
             last_name = self.request.POST.get('last_name', None)
+
             if first_name and last_name:
                 customers = customers.filter(user__first_name=first_name, user__last_name=last_name)
             elif first_name:
@@ -42,14 +43,17 @@ class CustomersListView(TemplateView):
 
 
 class CustomersCreateView(View):
-    customer_form_class = CustomerForm
     user_form_class = UserCustomerForm
+    customer_form_class = CustomerForm
+
     template_name = 'customers_create.html'
 
     def get(self, request, *args, **kwargs):
-        customer_form = self.customer_form_class
-        user_form = self.user_form_class
-        return render(request, self.template_name, {'user_form': user_form, 'customer_form': customer_form})
+
+        return render(request,
+                      self.template_name,
+                      {'user_form': self.user_form_class, 'customer_form': self.customer_form_class}
+                      )
 
     def post(self, request, *args, **kwargs):
         user_form = UserCustomerForm(request.POST)
@@ -75,15 +79,17 @@ class CustomersAuthView(View):
     form_class = LoginForm
 
     def get(self, request, *args, **kwargs):
-        form = self.form_class
-        return render(request, self.template_name, {'form': form})
+        return render(request,
+                      self.template_name,
+                      {'form': self.form_class}
+                      )
 
     def post(self, request, *args, **kwargs):
         user_form = LoginForm(request.POST)
         if user_form.is_valid():
             if is_passwords_match(user_form):
-                cd = user_form.cleaned_data
-                user = authenticate(username=cd['username'], password=cd['password'])
+                user_cleaned_data = user_form.cleaned_data
+                user = authenticate(username=user_cleaned_data['username'], password=user_cleaned_data['password'])
                 if user:
                     login(request, user)
                     return redirect('customers-list')

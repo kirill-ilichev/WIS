@@ -16,17 +16,15 @@ def is_passwords_match(form):
     return True
 
 
-def get_model_fields(model):
+def get_model_fields_list(model):
     return [field.name for field in model._meta.get_fields()]
 
 
 def sort_customers(field, customers):
-    customer_fields = get_model_fields(Customer)
-    user_fields = get_model_fields(User)
 
-    if field in customer_fields:
+    if field in get_model_fields_list(Customer):
         order_by = '{}'.format(field)
-    elif field in user_fields:
+    elif field in get_model_fields_list(User):
         order_by = 'user__{}'.format(field)
     else:
         return None
