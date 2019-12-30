@@ -1,7 +1,8 @@
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
-from django.shortcuts import render, redirect
-from django.views.generic import View, TemplateView
+from django.shortcuts import render, redirect, HttpResponseRedirect
+from django.views.generic import View, TemplateView, DetailView
+from django.urls import reverse
 
 from customers_app.forms import CustomerForm,  UserCustomerForm, LoginForm
 from customers_app.helpers import is_passwords_match, sort_customers
@@ -42,6 +43,11 @@ class CustomersListView(TemplateView):
         return self.render_to_response(context)
 
 
+class CustomersDetailView(DetailView):
+    template_name = "customers_detail.html"
+    model = Customer
+
+
 class CustomersCreateView(View):
     user_form_class = UserCustomerForm
     customer_form_class = CustomerForm
@@ -69,7 +75,7 @@ class CustomersCreateView(View):
                 customer.user = user
                 customer.save()
 
-                return redirect('customers-list')
+                return HttpResponseRedirect(reverse('customers-detail', kwargs={'pk': customer.pk}))
 
         return render(request, self.template_name, {'user_form': user_form, 'customer_form': customer_form})
 
