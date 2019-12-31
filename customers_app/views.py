@@ -64,7 +64,7 @@ class CustomersCreateView(View):
     def post(self, request, *args, **kwargs):
         user_form = UserCustomerForm(request.POST)
 
-        customer_form = CustomerForm(request.POST)
+        customer_form = CustomerForm(request.POST, request.FILES or None)
         if user_form.is_valid() and customer_form.is_valid():
             if is_passwords_match(user_form):
                 user_cleaned_data = user_form.cleaned_data
