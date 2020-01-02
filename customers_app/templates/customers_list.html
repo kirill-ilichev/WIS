@@ -11,12 +11,14 @@
         <input type="text" placeholder="last_name" name="last_name">
         <button type="submit">FILTER</button>
     </form>
+    <br>
     <table border="1">
         <tr>
-            <td><a href="?filter=first_name">first_name</a></td>
-            <td><a href="?filter=last_name">last_name</a></td>
-            <td><a href="?filter=age">age</a></td>
-            <td><a href="?filter=date_of_birth">date_of_birth</a></td></tr>
+            <td>first_name <a href="?filter=first_name_up">↑ </a><a href="?filter=first_name_down">↓</a></td>
+            <td>last_name <a href="?filter=last_name_up">↑ </a><a href="?filter=last_name_down">↓</a></td>
+            <td>age <a href="?filter=age_up">↑ </a><a href="?filter=age_down">↓</a></td>
+            <td>date_of_birth <a href="?filter=date_of_birth_up">↑ </a><a href="?filter=date_of_birth_down">↓</a></td>
+        </tr>
         {% for customer in customers %}
         <tr>
             <td>{{customer.user.first_name}}</td>

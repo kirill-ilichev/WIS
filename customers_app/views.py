@@ -5,7 +5,7 @@ from django.views.generic import View, TemplateView, DetailView
 from django.urls import reverse
 
 from customers_app.forms import CustomerForm,  UserCustomerForm, LoginForm
-from customers_app.helpers import is_passwords_match, sort_customers
+from customers_app.helpers import are_passwords_match, sort_customers
 from customers_app.models import Customer
 
 
@@ -17,9 +17,9 @@ class CustomersListView(TemplateView):
         customers = Customer.objects.all()
 
         if self.request.method == 'GET':
-            field_for_ordering = self.request.GET.get('filter', None)
-            if field_for_ordering:
-                sorted_customers = sort_customers(field_for_ordering, customers)
+            filter_query = self.request.GET.get('filter', None)
+            if filter_query:
+                sorted_customers = sort_customers(filter_query, customers)
                 if sorted_customers:
                     context['customers'] = sorted_customers
                     return context
@@ -66,7 +66,7 @@ class CustomersCreateView(View):
 
         customer_form = CustomerForm(request.POST, request.FILES or None)
         if user_form.is_valid() and customer_form.is_valid():
-            if is_passwords_match(user_form):
+            if are_passwords_match(user_form):
                 user_cleaned_data = user_form.cleaned_data
                 user_cleaned_data.pop('confirm_password')
 
@@ -93,7 +93,7 @@ class CustomersAuthView(View):
     def post(self, request, *args, **kwargs):
         user_form = LoginForm(request.POST)
         if user_form.is_valid():
-            if is_passwords_match(user_form):
+            if are_passwords_match(user_form):
                 user_cleaned_data = user_form.cleaned_data
                 user = authenticate(username=user_cleaned_data['username'], password=user_cleaned_data['password'])
                 if user:
