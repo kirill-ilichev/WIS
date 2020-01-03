@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Voting</title>
+</head>
+<body>
+
+    {% for photo in photos %}
+
+        <img src="{{ photo.photo.url }}" alt="img" width="100" height="100">
+        <br>
+
+        {{ photo.points }}
+
+        {% if photo.points < max_points%}
+
+            <form action="" method="post">
+                {% csrf_token %}
+                <button name="id_of_photo" value="{{ photo.id }}">+1</button>
+            </form>
+
+        {% endif %}
+        <br>
+
+    {% endfor %}
+
+</body>
+</html>

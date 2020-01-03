@@ -1,17 +1,49 @@
 from io import BytesIO
-
 from xlwt import Workbook
 
+from rest_framework.generics import ListAPIView
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
+from django.db import transaction
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, HttpResponseRedirect
 from django.views.generic import View, TemplateView, DetailView
 from django.urls import reverse
 
 from customers_app.forms import CustomerForm,  UserCustomerForm, LoginForm
-from customers_app.helpers import are_passwords_match, sort_customers, get_model_fields_list
-from customers_app.models import Customer
+from customers_app.helpers import are_passwords_match, sort_customers, get_model_fields_list,\
+                                  add_point_to_photo
+from customers_app.models import Customer, Photo
+from customers_app.serializers import PhotoSerializer
+
+
+class CustomersVotingAPIView(ListAPIView):
+    queryset = Photo.objects.all()
+    serializer_class = PhotoSerializer
+
+    def post(self, request, *args, **kwargs):
+        if request.data.get('id_of_photo', None):
+            add_point_to_photo(request.data.get('id_of_photo'))
+        return self.list(request, *args, **kwargs)
+
+
+class CustomersVotingView(TemplateView):
+    template_name = "customers_voting.html"
+
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+
+        context['photos'] = Photo.objects.all()
+        context['max_points'] = Photo.max_points
+
+        return context
+
+    def post(self, request, *args, **kwargs):
+        context = self.get_context_data(**kwargs)
+
+        add_point_to_photo(request.POST.get('id_of_photo'))
+
+        return self.render_to_response(context)
 
 
 class CustomersListView(TemplateView):
@@ -66,6 +98,7 @@ class CustomersCreateView(View):
                       {'user_form': self.user_form_class, 'customer_form': self.customer_form_class}
                       )
 
+    @transaction.atomic()
     def post(self, request, *args, **kwargs):
         user_form = UserCustomerForm(request.POST)
 
@@ -77,7 +110,12 @@ class CustomersCreateView(View):
 
                 user = User.objects.create_user(**user_cleaned_data)
                 customer = customer_form.save(commit=False)
+
+                photo = Photo.objects.create(photo=request.FILES['photo'])
+
                 customer.user = user
+                customer.photo = photo
+
                 customer.save()
 
                 return HttpResponseRedirect(reverse('customers-detail', kwargs={'pk': customer.pk}))

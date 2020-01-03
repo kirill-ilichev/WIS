@@ -24,7 +24,8 @@ class UserCustomerForm(forms.ModelForm):
 
 
 class CustomerForm(forms.ModelForm):
+    photo = forms.ImageField()
 
     class Meta:
         model = Customer
-        fields = ['age', 'date_of_birth', 'photo']
+        fields = ['age', 'date_of_birth']

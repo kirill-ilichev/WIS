@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 
-from customers_app.models import Customer
+from customers_app.models import Customer, Photo
 
 
 def are_passwords_match(form):
@@ -48,3 +48,16 @@ def sort_customers(filter_query, customers):
         return None
 
     return customers.order_by(order_by)
+
+
+def add_point_to_photo(id_of_photo):
+    if not Photo.objects.filter(id=id_of_photo).exists():
+        return
+
+    photo = Photo.objects.get(id=id_of_photo)
+
+    if photo.points == Photo.max_points:
+        return
+
+    photo.add_point_to_photo()
+    return True
