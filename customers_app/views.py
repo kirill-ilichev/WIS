@@ -1,7 +1,6 @@
 from io import BytesIO
 from xlwt import Workbook
 
-from rest_framework.generics import ListAPIView
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
 from django.db import transaction
@@ -9,6 +8,7 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect, HttpResponseRedirect
 from django.views.generic import View, TemplateView, DetailView
 from django.urls import reverse
+from rest_framework.generics import ListAPIView
 
 from customers_app.forms import CustomerForm,  UserCustomerForm, LoginForm
 from customers_app.helpers import are_passwords_match, sort_customers, get_model_fields_list,\
@@ -18,6 +18,10 @@ from customers_app.serializers import PhotoSerializer
 
 
 class CustomersVotingAPIView(ListAPIView):
+    """
+    GET - Returns info about all photos
+    POST({"id_of_photo": <int:id of photo>}) - Add point to certain photo
+    """
     queryset = Photo.objects.all()
     serializer_class = PhotoSerializer
 
@@ -28,6 +32,10 @@ class CustomersVotingAPIView(ListAPIView):
 
 
 class CustomersVotingView(TemplateView):
+    """
+    Render template with photos and points for each photo.
+    Allows to vote for certain photo by click on button near photo's points
+    """
     template_name = "customers_voting.html"
 
     def get_context_data(self, *args, **kwargs):
@@ -47,6 +55,10 @@ class CustomersVotingView(TemplateView):
 
 
 class CustomersListView(TemplateView):
+    """
+    Render template with information about customers
+    Allows filter and sort customer's information
+    """
     template_name = "customers_list.html"
 
     def get_context_data(self, *args, **kwargs):
@@ -73,11 +85,17 @@ class CustomersListView(TemplateView):
 
 
 class CustomersDetailView(DetailView):
+    """
+    Render template with information about certain customer
+    """
     template_name = "customers_detail.html"
     model = Customer
 
 
 class CustomersCreateView(View):
+    """
+    Render registration template
+    """
     user_form_class = UserCustomerForm
     customer_form_class = CustomerForm
 
@@ -116,6 +134,9 @@ class CustomersCreateView(View):
 
 
 class CustomersAuthView(View):
+    """
+    Render authentication template
+    """
     template_name = 'customers_auth.html'
     form_class = LoginForm
 
@@ -142,7 +163,10 @@ class CustomersAuthView(View):
 
 
 def export_customers_details_in_xlsx(request):
-
+    """
+    Collects information about customers and export it in xlsx file.
+    Then allows customer to chose where to save export file
+    """
     excelfile = BytesIO()
 
     wb = Workbook(encoding='utf-8')
