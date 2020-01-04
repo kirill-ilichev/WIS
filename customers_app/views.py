@@ -51,33 +51,25 @@ class CustomersListView(TemplateView):
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
+
         customers = Customer.objects.all()
+        filter_query = self.request.GET
 
-        if self.request.method == 'GET':
-            filter_query = self.request.GET.get('filter', None)
-            if filter_query:
-                sorted_customers = sort_customers(filter_query, customers)
-                if sorted_customers:
-                    context['customers'] = sorted_customers
-                    return context
+        if filter_query.get('first-name', None):
+            customers = customers.filter(user__first_name=filter_query.get('first-name'))
+        if filter_query.get('last-name', None):
+            customers = customers.filter(user__last_name=filter_query.get('last-name'))
 
-        if self.request.method == 'POST':
-            first_name = self.request.POST.get('first_name', None)
-            last_name = self.request.POST.get('last_name', None)
+        sort_name = filter_query.get('sort-name', None)
+        if sort_name:
+            sorted_customers = sort_customers(sort_name, filter_query.get('sort-direction'), customers)
 
-            if first_name and last_name:
-                customers = customers.filter(user__first_name=first_name, user__last_name=last_name)
-            elif first_name:
-                customers = customers.filter(user__first_name=first_name)
-            elif last_name:
-                customers = customers.filter(user__last_name=last_name)
+            if sorted_customers:
+                context['customers'] = sorted_customers
+                return context
 
         context['customers'] = customers
         return context
-
-    def post(self, request, *args, **kwargs):
-        context = self.get_context_data(**kwargs)
-        return self.render_to_response(context)
 
 
 class CustomersDetailView(DetailView):

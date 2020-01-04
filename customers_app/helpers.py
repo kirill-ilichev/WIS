@@ -20,30 +20,24 @@ def get_model_fields_list(model):
     return [field.name for field in model._meta.get_fields()]
 
 
-def sort_customers(filter_query, customers):
+def sort_customers(sort_name, sort_direction, customers):
 
-    try:
-        field = filter_query[:filter_query.rindex('_')]
-    except ValueError:
+    if sort_direction not in ['asc', 'desc']:
         return None
 
-    sort_direction = filter_query[filter_query.rindex('_')+1:]
+    if sort_name in get_model_fields_list(Customer):
 
-    if sort_direction not in ['up', 'down']:
-        return None
+        if sort_direction == 'asc':
+            order_by = '{}'.format(sort_name)
+        elif sort_direction == 'desc':
+            order_by = '-{}'.format(sort_name)
 
-    if field in get_model_fields_list(Customer):
+    elif sort_name in get_model_fields_list(User):
 
-        if sort_direction == 'up':
-            order_by = '{}'.format(field)
-        elif sort_direction == 'down':
-            order_by = '-{}'.format(field)
-    elif field in get_model_fields_list(User):
-
-        if sort_direction == 'up':
-            order_by = 'user__{}'.format(field)
-        elif sort_direction == 'down':
-            order_by = '-user__{}'.format(field)
+        if sort_direction == 'asc':
+            order_by = 'user__{}'.format(sort_name)
+        elif sort_direction == 'desc':
+            order_by = '-user__{}'.format(sort_name)
     else:
         return None
 

@@ -5,20 +5,34 @@
     <title>List</title>
 </head>
 <body>
-    <form method="POST">
-        {% csrf_token %}
-        <input type="text" placeholder="first_name" name="first_name">
-        <input type="text" placeholder="last_name" name="last_name">
-        <button type="submit">FILTER</button>
-    </form>
+    <input class="sort-firstName" type="text" placeholder="first_name" name="first_name">
+    <input class="sort-lastName" type="text" placeholder="last_name" name="last_name">
+    <button class="filter-btn">FILTER</button>
+    <br>
     <br>
     <table border="1">
-        <tr>
-            <td>first_name <a href="?filter=first_name_up">↑ </a><a href="?filter=first_name_down">↓</a></td>
-            <td>last_name <a href="?filter=last_name_up">↑ </a><a href="?filter=last_name_down">↓</a></td>
-            <td>age <a href="?filter=age_up">↑ </a><a href="?filter=age_down">↓</a></td>
-            <td>date_of_birth <a href="?filter=date_of_birth_up">↑ </a><a href="?filter=date_of_birth_down">↓</a></td>
-        </tr>
+    <tr>
+        <td>
+            first_name
+            <button class="sort-btn" data-sort-direction="asc" data-sort-name="first_name">↑</button>
+            <button class="sort-btn" data-sort-direction="desc" data-sort-name="first_name">↓</button>
+        </td>
+        <td>
+            last_name
+            <button class="sort-btn" data-sort-direction="asc" data-sort-name="last_name">↑</button>
+            <button class="sort-btn" data-sort-direction="desc" data-sort-name="last_name">↓</button>
+        </td>
+        <td>
+            age
+            <button class="sort-btn" data-sort-direction="asc" data-sort-name="age">↑</button>
+            <button class="sort-btn" data-sort-direction="desc" data-sort-name="age">↓</button>
+        </td>
+        <td>
+            date_of_birth
+            <button class="sort-btn" data-sort-direction="asc" data-sort-name="date_of_birth">↑</button>
+            <button class="sort-btn" data-sort-direction="desc" data-sort-name="date_of_birth">↓</button>
+        </td>
+    </tr>
         {% for customer in customers %}
         <tr>
             <td>{{customer.user.first_name}}</td>
@@ -28,5 +42,29 @@
         </tr>
         {% endfor %}
     </table>
+
+    <script>
+        document.querySelectorAll('.sort-btn').forEach(btn => btn.addEventListener('click', function() {
+          var searchParams = new URLSearchParams(window.location.search);
+          searchParams.set('sort-name', btn.getAttribute('data-sort-name'));
+          searchParams.set('sort-direction', btn.getAttribute('data-sort-direction'));
+          window.location.search = searchParams.toString();
+        }))
+
+        var inputs = document.querySelectorAll('.sort-firstName, .sort-lastName');
+        document.querySelector('.filter-btn').addEventListener('click', () => {
+          var searchParams = new URLSearchParams('');
+
+          if (inputs[0].value) {
+            searchParams.set('first-name', inputs[0].value);
+          }
+
+          if (inputs[1].value) {
+            searchParams.set('last-name', inputs[1].value);
+          }
+
+          window.location.search = searchParams.toString();
+        })
+    </script>
 </body>
 </html>
