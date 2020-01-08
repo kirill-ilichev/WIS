@@ -1,8 +1,9 @@
 from django.urls import path
 
+from .APIviews import CustomersListAPIView, CustomersVotingAPIView
+from .export_functions import export_customers_details_in_xlsx
 from .views import CustomersListView, CustomersCreateView, CustomersAuthView, CustomersDetailView,\
-                   export_customers_details_in_xlsx, CustomersVotingView, CustomersVotingAPIView, \
-                   CustomersListAPIView
+                   CustomersVotingView
 
 urlpatterns = [
     path('auth/', CustomersAuthView.as_view(), name='customers-auth'),
