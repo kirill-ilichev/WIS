@@ -23,3 +23,12 @@ class CustomerListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Customer
         fields = ('age', 'date_of_birth', 'user')
+
+
+class CustomerDetailSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+    photo = PhotoSerializer()
+
+    class Meta:
+        model = Customer
+        fields = ('age', 'date_of_birth', 'user', 'photo',)

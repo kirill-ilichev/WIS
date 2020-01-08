@@ -1,5 +1,6 @@
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
+from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.shortcuts import render, redirect, HttpResponseRedirect
 from django.views.generic import View, TemplateView, DetailView
@@ -25,7 +26,17 @@ class CustomersVotingView(TemplateView):
 
         return context
 
+    def get(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            raise PermissionDenied
+
+        context = self.get_context_data(**kwargs)
+        return self.render_to_response(context)
+
     def post(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            raise PermissionDenied
+
         context = self.get_context_data(**kwargs)
 
         add_point_to_photo(request.POST.get('id_of_photo'))
@@ -49,6 +60,13 @@ class CustomersListView(TemplateView):
         context['customers'] = filter_and_sort_customers_by_query_params(query_params, customers)
         return context
 
+    def get(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            raise PermissionDenied
+
+        context = self.get_context_data(**kwargs)
+        return self.render_to_response(context)
+
 
 class CustomersDetailView(DetailView):
     """
@@ -56,6 +74,14 @@ class CustomersDetailView(DetailView):
     """
     template_name = "customers_detail.html"
     model = Customer
+
+    def get(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            raise PermissionDenied
+
+        self.object = self.get_object()
+        context = self.get_context_data(object=self.object)
+        return self.render_to_response(context)
 
 
 class CustomersCreateView(View):
@@ -68,6 +94,8 @@ class CustomersCreateView(View):
     template_name = 'customers_create.html'
 
     def get(self, request, *args, **kwargs):
+        if not request.user.is_staff:
+            raise PermissionDenied
 
         return render(request,
                       self.template_name,
@@ -76,6 +104,9 @@ class CustomersCreateView(View):
 
     @transaction.atomic()
     def post(self, request, *args, **kwargs):
+        if not request.user.is_staff:
+            raise PermissionDenied
+
         user_form = UserCustomerForm(request.POST)
 
         customer_form = CustomerForm(request.POST, request.FILES or None)
@@ -120,7 +151,7 @@ class CustomersAuthView(View):
                 user = authenticate(username=user_cleaned_data['username'], password=user_cleaned_data['password'])
                 if user:
                     login(request, user)
-                    return redirect('customers-list')
+                    return redirect('customers-detail', pk=user.customer.pk)
                 else:
                     msg = 'Invalid login or password'
                     user_form.errors['__all__'] = user_form.error_class([msg])

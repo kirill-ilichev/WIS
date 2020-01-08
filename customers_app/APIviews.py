@@ -1,8 +1,10 @@
-from rest_framework.generics import ListAPIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.generics import ListAPIView, RetrieveUpdateDestroyAPIView
 
 from customers_app.helpers import add_point_to_photo, filter_and_sort_customers_by_query_params
+from customers_app.permissions import IsOwnerOrAdminOrReadOnly
 from customers_app.models import Customer, Photo
-from customers_app.serializers import PhotoSerializer, CustomerListSerializer
+from customers_app.serializers import PhotoSerializer, CustomerListSerializer, CustomerDetailSerializer
 
 
 class CustomersListAPIView(ListAPIView):
@@ -28,6 +30,7 @@ class CustomersListAPIView(ListAPIView):
     """
     queryset = Customer.objects.all()
     serializer_class = CustomerListSerializer
+    permission_classes = (IsAuthenticated, )
 
     def get(self, request, *args, **kwargs):
         query_params = request.query_params
@@ -39,6 +42,30 @@ class CustomersListAPIView(ListAPIView):
         self.queryset = queryset
 
         return self.list(request, *args, **kwargs)
+
+
+class CustomersDetailAPIView(RetrieveUpdateDestroyAPIView):
+    """
+    GET - Returns info about customers
+    {
+        "age": int,
+        "date_of_birth": date,
+        "user": {
+            "first_name": string,
+            "last_name": string
+        },
+        "photo": {
+            "id": int,
+            "photo": url,
+            "points": int
+        }
+    }
+    PUT, PATCH - Update info about customer
+    DELETE - Delete customer
+    """
+    queryset = Customer.objects.all()
+    serializer_class = CustomerDetailSerializer
+    permission_classes = (IsAuthenticated, IsOwnerOrAdminOrReadOnly)
 
 
 class CustomersVotingAPIView(ListAPIView):
@@ -57,6 +84,7 @@ class CustomersVotingAPIView(ListAPIView):
     """
     queryset = Photo.objects.all()
     serializer_class = PhotoSerializer
+    permission_classes = (IsAuthenticated, )
 
     def post(self, request, *args, **kwargs):
         if request.data.get('id_of_photo', None):
