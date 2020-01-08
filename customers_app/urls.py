@@ -1,7 +1,8 @@
 from django.urls import path
 
 from .views import CustomersListView, CustomersCreateView, CustomersAuthView, CustomersDetailView,\
-                   export_customers_details_in_xlsx, CustomersVotingView, CustomersVotingAPIView
+                   export_customers_details_in_xlsx, CustomersVotingView, CustomersVotingAPIView, \
+                   CustomersListAPIView
 
 urlpatterns = [
     path('auth/', CustomersAuthView.as_view(), name='customers-auth'),
@@ -10,5 +11,6 @@ urlpatterns = [
     path('list/', CustomersListView.as_view(), name='customers-list'),
     path('voting/', CustomersVotingView.as_view(), name='customers-voting'),
     path('<int:pk>/', CustomersDetailView.as_view(), name='customers-detail'),
-    path('api/voting/', CustomersVotingAPIView.as_view(), name='api-customers-voting')
+    path('api/list/', CustomersListAPIView.as_view(), name='api-customers-list'),
+    path('api/voting/', CustomersVotingAPIView.as_view(), name='api-customers-voting'),
 ]

@@ -44,6 +44,23 @@ def sort_customers(sort_name, sort_direction, customers):
     return customers.order_by(order_by)
 
 
+def filter_and_sort_customers_by_query_params(query_params, customers):
+
+    if query_params.get('first-name', None):
+        customers = customers.filter(user__first_name=query_params.get('first-name'))
+    if query_params.get('last-name', None):
+        customers = customers.filter(user__last_name=query_params.get('last-name'))
+
+    sort_name = query_params.get('sort-name', None)
+    if sort_name:
+        sorted_customers = sort_customers(sort_name, query_params.get('sort-direction'), customers)
+
+        if sorted_customers:
+            return sorted_customers
+
+    return customers
+
+
 def add_point_to_photo(id_of_photo):
     if not Photo.objects.filter(id=id_of_photo).exists():
         return

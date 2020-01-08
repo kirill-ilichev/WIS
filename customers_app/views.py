@@ -11,16 +11,61 @@ from django.urls import reverse
 from rest_framework.generics import ListAPIView
 
 from customers_app.forms import CustomerForm,  UserCustomerForm, LoginForm
-from customers_app.helpers import are_passwords_match, sort_customers, get_model_fields_list,\
-                                  add_point_to_photo
+from customers_app.helpers import are_passwords_match, get_model_fields_list,\
+                                  add_point_to_photo, filter_and_sort_customers_by_query_params
 from customers_app.models import Customer, Photo
-from customers_app.serializers import PhotoSerializer
+from customers_app.serializers import PhotoSerializer, CustomerListSerializer
+
+
+class CustomersListAPIView(ListAPIView):
+    """
+    GET - Returns info about customers
+    [
+        {
+        "age": int,
+        "date_of_birth": date,
+        "user": {
+            "first_name": string,
+            "last_name": string
+        },
+        ...
+
+    ]
+    Use query params for sorting and filtering
+    ?first-name= <string> & - filter queryset by first name of customer
+    last-name= <string> - filter queryset by last name of customer
+
+    sort-name= first_name|last_name|age|date_of_birth & - sort queryset by 1 of 4 fields
+    sort-direction= asc|desc - chose direction for sorting queryset
+    """
+    queryset = Customer.objects.all()
+    serializer_class = CustomerListSerializer
+
+    def get(self, request, *args, **kwargs):
+        query_params = request.query_params
+
+        if not query_params:
+            return self.list(request, *args, **kwargs)
+
+        queryset = filter_and_sort_customers_by_query_params(query_params, self.queryset)
+        self.queryset = queryset
+
+        return self.list(request, *args, **kwargs)
 
 
 class CustomersVotingAPIView(ListAPIView):
     """
     GET - Returns info about all photos
-    POST({"id_of_photo": <int:id of photo>}) - Add point to certain photo
+    [
+        {
+            "id": int,
+            "photo": url,
+            "points": int,
+        },
+        ...
+    ]
+    POST - Add point to certain photo
+    {"id_of_photo": <int:id of photo>}
     """
     queryset = Photo.objects.all()
     serializer_class = PhotoSerializer
@@ -57,7 +102,7 @@ class CustomersVotingView(TemplateView):
 class CustomersListView(TemplateView):
     """
     Render template with information about customers
-    Allows filter and sort customer's information
+    Allows filter and sort customer's information by buttons
     """
     template_name = "customers_list.html"
 
@@ -65,22 +110,9 @@ class CustomersListView(TemplateView):
         context = super().get_context_data(*args, **kwargs)
 
         customers = Customer.objects.all()
-        filter_query = self.request.GET
+        query_params = self.request.GET
 
-        if filter_query.get('first-name', None):
-            customers = customers.filter(user__first_name=filter_query.get('first-name'))
-        if filter_query.get('last-name', None):
-            customers = customers.filter(user__last_name=filter_query.get('last-name'))
-
-        sort_name = filter_query.get('sort-name', None)
-        if sort_name:
-            sorted_customers = sort_customers(sort_name, filter_query.get('sort-direction'), customers)
-
-            if sorted_customers:
-                context['customers'] = sorted_customers
-                return context
-
-        context['customers'] = customers
+        context['customers'] = filter_and_sort_customers_by_query_params(query_params, customers)
         return context
 
 
