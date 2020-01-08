@@ -67,6 +67,11 @@ class CustomersDetailAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = CustomerDetailSerializer
     permission_classes = (IsAuthenticated, IsOwnerOrAdminOrReadOnly)
 
+    def perform_destroy(self, instance):
+        instance.user.delete()
+        instance.photo.delete()
+        instance.delete()
+
 
 class CustomersVotingAPIView(ListAPIView):
     """
