@@ -10,5 +10,9 @@
     {{object.user.last_name}}<br>
     {{object.age}}<br>
     {{object.date_of_birth}}<br>
+    <br>
+    {% if user.is_staff %}
+        <a href="{{delete_url}}">Удалить профиль?</a>
+    {% endif %}
 </body>
 </html>

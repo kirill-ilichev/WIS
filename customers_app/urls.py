@@ -2,7 +2,7 @@ from django.urls import path
 
 from .export_functions import export_customers_details_in_xlsx
 from .views import CustomersListView, CustomersCreateView, CustomersAuthView, CustomersDetailView,\
-                   CustomersVotingView
+                   CustomersVotingView, CustomersDeleteView
 
 urlpatterns = [
     path('auth/', CustomersAuthView.as_view(), name='customers-auth'),
@@ -11,4 +11,5 @@ urlpatterns = [
     path('list/', CustomersListView.as_view(), name='customers-list'),
     path('voting/', CustomersVotingView.as_view(), name='customers-voting'),
     path('<int:pk>/', CustomersDetailView.as_view(), name='customers-detail'),
+    path('<int:pk>/delete/', CustomersDeleteView.as_view(), name='customers-delete')
 ]

@@ -3,8 +3,8 @@ from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.shortcuts import render, redirect, HttpResponseRedirect
-from django.views.generic import View, TemplateView, DetailView
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
+from django.views.generic import View, TemplateView, DetailView, DeleteView, UpdateView
 
 from customers_app.forms import CustomerForm,  UserCustomerForm, LoginForm
 from customers_app.helpers import are_passwords_match, add_point_to_photo, filter_and_sort_customers_by_query_params
@@ -75,13 +75,40 @@ class CustomersDetailView(DetailView):
     template_name = "customers_detail.html"
     model = Customer
 
-    def get(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
+    def get_object(self, queryset=None):
+
+        if not self.request.user.is_authenticated:
             raise PermissionDenied
 
-        self.object = self.get_object()
-        context = self.get_context_data(object=self.object)
-        return self.render_to_response(context)
+        obj = super().get_object()
+        return obj
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['delete_url'] = reverse_lazy('customers-delete', kwargs={'pk': self.get_object().pk})
+        return context
+
+
+class CustomersDeleteView(DeleteView):
+    """
+    Delete certain customer
+    """
+    template_name = 'customers_confirm_delete.html'
+    model = Customer
+    success_url = reverse_lazy('customers-auth')
+
+    def get_object(self, queryset=None):
+        if not self.request.user.is_authenticated:
+            raise PermissionDenied
+
+        obj = super().get_object()
+        if self.request.user.is_staff:
+            return obj
+
+        if not self.request.user.customer.pk == obj.pk:
+            raise PermissionDenied
+
+        return obj
 
 
 class CustomersCreateView(View):
