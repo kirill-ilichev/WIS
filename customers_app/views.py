@@ -1,14 +1,19 @@
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.shortcuts import render, redirect, HttpResponseRedirect
 from django.urls import reverse, reverse_lazy
-from django.views.generic import View, TemplateView, DetailView, DeleteView, UpdateView
+from django.views.generic import View, TemplateView, DetailView, DeleteView
 
-from customers_app.forms import CustomerForm,  UserCustomerForm, LoginForm
+from customers_app.forms import CustomerForm,  UserForm, LoginForm
 from customers_app.helpers import are_passwords_match, add_point_to_photo, filter_and_sort_customers_by_query_params
 from customers_app.models import Customer, Photo
+
+
+def logout_view(request):
+    logout(request)
+    return redirect('customers-auth')
 
 
 class CustomersVotingView(TemplateView):
@@ -86,6 +91,7 @@ class CustomersDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['delete_url'] = reverse_lazy('customers-delete', kwargs={'pk': self.get_object().pk})
+        context['logout_url'] = reverse_lazy('customers-logout')
         return context
 
 
@@ -105,7 +111,7 @@ class CustomersDeleteView(DeleteView):
         if self.request.user.is_staff:
             return obj
 
-        if not self.request.user.customer.pk == obj.pk:
+        if not self.request.user.customer == obj:
             raise PermissionDenied
 
         return obj
@@ -115,7 +121,7 @@ class CustomersCreateView(View):
     """
     Render registration template
     """
-    user_form_class = UserCustomerForm
+    user_form_class = UserForm
     customer_form_class = CustomerForm
 
     template_name = 'customers_create.html'
@@ -134,7 +140,7 @@ class CustomersCreateView(View):
         if not request.user.is_staff:
             raise PermissionDenied
 
-        user_form = UserCustomerForm(request.POST)
+        user_form = UserForm(request.POST)
 
         customer_form = CustomerForm(request.POST, request.FILES or None)
         if user_form.is_valid() and customer_form.is_valid():

@@ -10,7 +10,7 @@ class LoginForm(forms.Form):
     confirm_password = forms.CharField(widget=forms.PasswordInput())
 
 
-class UserCustomerForm(forms.ModelForm):
+class UserForm(forms.ModelForm):
     first_name = forms.CharField()
     last_name = forms.CharField()
     confirm_password = forms.CharField(widget=forms.PasswordInput())
