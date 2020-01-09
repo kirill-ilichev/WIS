@@ -35,7 +35,7 @@
     </tr>
         {% for customer in customers %}
         <tr>
-            <td>{{customer.user.first_name}}</td>
+            <td><a href="/customers/{{ customer.id }}/">{{customer.user.first_name}}</a></td>
             <td>{{customer.user.last_name}}</td>
             <td>{{customer.age}}</td>
             <td>{{customer.date_of_birth}}</td>

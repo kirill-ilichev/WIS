@@ -12,6 +12,8 @@
     </form>
     <br>
     <br>
-    <a href="/customers/create">If you want to create account click here?</a>
+    {% if user.is_staff %}
+        <a href="{{customers_create_url}}">Хотите создать аккаунт?</a>
+    {% endif %}
 </body>
 </html>

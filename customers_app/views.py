@@ -11,6 +11,25 @@ from customers_app.helpers import are_passwords_match, add_point_to_photo, filte
 from customers_app.models import Customer, Photo
 
 
+class HomePage(TemplateView):
+    """
+    Render home page with links to pages of project
+    """
+    template_name = 'home.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['customers_list_url'] = reverse_lazy('customers-list')
+        context['customers_voting_url'] = reverse_lazy('customers-voting')
+        context['customers_auth_url'] = reverse_lazy('customers-auth')
+        context['customers_create_url'] = reverse_lazy('customers-create')
+        user = self.request.user
+        if user.is_authenticated:
+            context['customers_detail_url'] = reverse_lazy('customers-detail', kwargs={'pk': user.id})
+
+        return context
+
+
 def logout_view(request):
     logout(request)
     return redirect('customers-auth')
@@ -173,7 +192,7 @@ class CustomersAuthView(View):
     def get(self, request, *args, **kwargs):
         return render(request,
                       self.template_name,
-                      {'form': self.form_class}
+                      {'form': self.form_class, 'customers_create_url': reverse_lazy('customers-create')}
                       )
 
     def post(self, request, *args, **kwargs):
@@ -184,7 +203,7 @@ class CustomersAuthView(View):
                 user = authenticate(username=user_cleaned_data['username'], password=user_cleaned_data['password'])
                 if user:
                     login(request, user)
-                    return redirect('customers-detail', pk=user.customer.pk)
+                    return redirect('home')
                 else:
                     msg = 'Invalid login or password'
                     user_form.errors['__all__'] = user_form.error_class([msg])

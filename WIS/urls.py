@@ -3,9 +3,11 @@ from django.contrib import admin
 from django.urls import path, include
 
 from customers_app.APIviews import *
+from customers_app.views import HomePage
 from . import settings
 
 urlpatterns = [
+    path('', HomePage.as_view(), name='home'),
     path('admin/', admin.site.urls),
     path('customers/', include('customers_app.urls')),
     path('api/customers/', include([
