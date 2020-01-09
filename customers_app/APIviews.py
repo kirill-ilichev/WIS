@@ -1,3 +1,4 @@
+from rest_framework import parsers
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import ListAPIView, RetrieveUpdateDestroyAPIView
 
@@ -66,6 +67,7 @@ class CustomersDetailAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Customer.objects.all()
     serializer_class = CustomerDetailSerializer
     permission_classes = (IsAuthenticated, IsOwnerOrAdminOrReadOnly)
+    parser_classes = [parsers.MultiPartParser]
 
     def perform_destroy(self, instance):
         instance.user.delete()
