@@ -30,7 +30,7 @@ class CustomerListSerializer(serializers.ModelSerializer):
 
 class CustomerSerializer(serializers.ModelSerializer):
     user = UserListSerializer()
-    photo = PhotoSerializer()
+    photo = PhotoSerializer(read_only=True)
 
     class Meta:
         model = Customer
@@ -47,11 +47,6 @@ class CustomerSerializer(serializers.ModelSerializer):
             user.first_name = validated_data.get('user').get('first_name', user.first_name)
             user.last_name = validated_data.get('user').get('last_name', user.last_name)
             user.save()
-
-        if validated_data.get('photo', None):
-            photo = Photo.objects.get(id=instance.photo_id)
-            photo.photo = validated_data.get('photo').get('photo', photo.photo)
-            photo.save()
 
         return instance
 
@@ -91,14 +86,11 @@ class CustomerCreateSerializer(CustomerSerializer):
     def create(self, validated_data):
 
         user_data = validated_data.pop('user')
-        photo_data = validated_data.pop('photo')
 
         user = User.objects.create_user(password=validated_data.pop('password'),
                                         **user_data)
 
-        photo = Photo.objects.create(**photo_data)
-
         validated_data.pop('confirm_password')
-        customer = Customer.objects.create(**validated_data, user=user, photo=photo)
+        customer = Customer.objects.create(**validated_data, user=user)
 
         return customer

@@ -1,7 +1,7 @@
 from rest_framework import parsers
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.generics import ListAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView
-
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from customers_app.helpers import add_point_to_photo, filter_and_sort_customers_by_query_params
 from customers_app.permissions import IsOwnerOrAdminOrReadOnly
 from customers_app.serializers import *
@@ -31,6 +31,7 @@ class CustomersListAPIView(ListAPIView):
     """
     queryset = Customer.objects.all()
     serializer_class = CustomerListSerializer
+    authentication_classes = [JWTAuthentication]
     permission_classes = (IsAuthenticated, )
 
     def get(self, request, *args, **kwargs):
@@ -57,7 +58,6 @@ class CustomersDetailAPIView(RetrieveUpdateDestroyAPIView):
             "last_name": string
         },
         "photo": {
-            "id": int,
             "photo": url,
             "points": int
         }
@@ -67,6 +67,7 @@ class CustomersDetailAPIView(RetrieveUpdateDestroyAPIView):
     """
     queryset = Customer.objects.all()
     serializer_class = CustomerSerializer
+    authentication_classes = [JWTAuthentication]
     permission_classes = (IsAuthenticated, IsOwnerOrAdminOrReadOnly)
     parser_classes = [parsers.MultiPartParser]
 
@@ -92,6 +93,7 @@ class CustomersVotingAPIView(ListAPIView):
     """
     queryset = Photo.objects.all()
     serializer_class = PhotoSerializer
+    authentication_classes = [JWTAuthentication]
     permission_classes = (IsAuthenticated, )
 
     def post(self, request, *args, **kwargs):
@@ -120,4 +122,4 @@ class CustomersCreateAPIView(CreateAPIView):
     """
     permission_classes = (IsAdminUser, )
     serializer_class = CustomerCreateSerializer
-    parser_classes = [parsers.MultiPartParser]
+    authentication_classes = [JWTAuthentication]
