@@ -12,9 +12,9 @@ urlpatterns = [
     path('customers/', include('customers_app.urls')),
     path('api/customers/', include([
         path('list/', CustomersListAPIView.as_view(), name='api-customers-list'),
-        path('create/', CustomersCreateAPIView.as_view(), name='api-customers-create'),
-        path('voting/', CustomersVotingAPIView.as_view(), name='api-customers-voting'),
-        path('<int:pk>/', CustomersDetailAPIView.as_view(), name='api-customers-detail')
+        # path('create/', CustomersCreateAPIView.as_view(), name='api-customers-create'),
+        # path('voting/', CustomersVotingAPIView.as_view(), name='api-customers-voting'),
+        # path('<int:pk>/', CustomersDetailAPIView.as_view(), name='api-customers-detail')
     ]))
 ]
 

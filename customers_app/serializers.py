@@ -10,7 +10,7 @@ class PhotoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Photo
-        fields = ('id', 'photo', 'points')
+        fields = ('photo', 'points')
 
 
 class UserListSerializer(serializers.ModelSerializer):
