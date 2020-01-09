@@ -1,11 +1,11 @@
 from rest_framework import parsers
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.generics import ListAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.generics import ListAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView
 
 from customers_app.helpers import add_point_to_photo, filter_and_sort_customers_by_query_params
 from customers_app.permissions import IsOwnerOrAdminOrReadOnly
+from customers_app.serializers import *
 from customers_app.models import Customer, Photo
-from customers_app.serializers import PhotoSerializer, CustomerListSerializer, CustomerDetailSerializer
 
 
 class CustomersListAPIView(ListAPIView):
@@ -26,7 +26,7 @@ class CustomersListAPIView(ListAPIView):
     ?first-name= <string> & - filter queryset by first name of customer
     last-name= <string> - filter queryset by last name of customer
 
-    sort-name= first_name|last_name|age|date_of_birth & - sort queryset by 1 of 4 fields
+    sort-name= first_name|last_name|age|date_of_birth|username & - sort queryset by 1 of this fields
     sort-direction= asc|desc - chose direction for sorting queryset
     """
     queryset = Customer.objects.all()
@@ -52,6 +52,7 @@ class CustomersDetailAPIView(RetrieveUpdateDestroyAPIView):
         "age": int,
         "date_of_birth": date,
         "user": {
+            "username": string,
             "first_name": string,
             "last_name": string
         },
@@ -65,7 +66,7 @@ class CustomersDetailAPIView(RetrieveUpdateDestroyAPIView):
     DELETE - Delete customer
     """
     queryset = Customer.objects.all()
-    serializer_class = CustomerDetailSerializer
+    serializer_class = CustomerSerializer
     permission_classes = (IsAuthenticated, IsOwnerOrAdminOrReadOnly)
     parser_classes = [parsers.MultiPartParser]
 
@@ -97,3 +98,26 @@ class CustomersVotingAPIView(ListAPIView):
         if request.data.get('id_of_photo', None):
             add_point_to_photo(request.data.get('id_of_photo'))
         return self.list(request, *args, **kwargs)
+
+
+class CustomersCreateAPIView(CreateAPIView):
+    """
+    POST - Create customer
+    {
+        "age": int,
+        "date_of_birth": date,
+        "user": {
+            "first_name": "string",
+            "last_name": "string",
+            "username": "string"
+        },
+        "password": "string",
+        "confirm_password": "string",
+        "photo": {
+            "photo": file,
+        }
+    }
+    """
+    permission_classes = (IsAdminUser, )
+    serializer_class = CustomerCreateSerializer
+    parser_classes = [parsers.MultiPartParser]

@@ -8,8 +8,7 @@ class IsOwnerOrAdminOrReadOnly(BasePermission):
 
         if request.method in SAFE_METHODS:
             return True
-
-        if request.method == 'PUT' or request.method == 'DELETE':
+        else:
             if request.user.is_staff:
                 return True
 

@@ -13,6 +13,11 @@
     <table border="1">
     <tr>
         <td>
+            username
+            <button class="sort-btn" data-sort-direction="asc" data-sort-name="username">↑</button>
+            <button class="sort-btn" data-sort-direction="desc" data-sort-name="username">↓</button>
+        </td>
+        <td>
             first_name
             <button class="sort-btn" data-sort-direction="asc" data-sort-name="first_name">↑</button>
             <button class="sort-btn" data-sort-direction="desc" data-sort-name="first_name">↓</button>
@@ -35,7 +40,8 @@
     </tr>
         {% for customer in customers %}
         <tr>
-            <td><a href="/customers/{{ customer.id }}/">{{customer.user.first_name}}</a></td>
+            <td><a href="/customers/{{ customer.user.id }}/">{{customer.user.username}}</a></td>
+            <td>{{customer.user.first_name}}</a></td>
             <td>{{customer.user.last_name}}</td>
             <td>{{customer.age}}</td>
             <td>{{customer.date_of_birth}}</td>
