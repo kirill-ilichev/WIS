@@ -97,7 +97,7 @@ class CustomersDetailView(DetailView):
     Render template with information about certain customer
     """
     template_name = "customers_detail.html"
-    model = Customer
+    model = User
 
     def get_object(self, queryset=None):
 

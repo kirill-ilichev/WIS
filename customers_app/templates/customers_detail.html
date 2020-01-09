@@ -5,11 +5,11 @@
     <title>Detail</title>
 </head>
 <body>
-    <img src="{{ object.photo.photo.url }}" alt="img"><br>
-    {{object.user.first_name}}<br>
-    {{object.user.last_name}}<br>
-    {{object.age}}<br>
-    {{object.date_of_birth}}<br>
+    <img src="{{ object.customer.photo.photo.url }}" alt="img"><br>
+    {{object.first_name}}<br>
+    {{object.last_name}}<br>
+    {{object.customer.age}}<br>
+    {{object.customer.date_of_birth}}<br>
     <br>
     {% if user.is_staff %}
         <a href="{{delete_url}}">Удалить профиль?</a>
