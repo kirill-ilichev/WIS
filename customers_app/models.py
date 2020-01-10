@@ -21,7 +21,7 @@ class Customer(models.Model):
 
     date_of_birth = models.DateField()
 
-    photo = models.OneToOneField(Photo, on_delete=models.CASCADE, blank=True, null=True)
+    photo = models.OneToOneField(Photo, on_delete=models.SET_NULL, blank=True, null=True)
 
     def __str__(self):
         return "{0} customer".format(self.pk)

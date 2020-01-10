@@ -10,14 +10,14 @@ class PhotoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Photo
-        fields = ('photo', 'points')
+        fields = ('id', 'photo', 'points')
 
 
 class UserListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('first_name', 'last_name', 'username')
+        fields = ('id', 'first_name', 'last_name', 'username')
 
 
 class CustomerListSerializer(serializers.ModelSerializer):
@@ -25,30 +25,16 @@ class CustomerListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Customer
-        fields = ('age', 'date_of_birth', 'user')
+        fields = ('id', 'age', 'date_of_birth', 'user')
 
 
 class CustomerSerializer(serializers.ModelSerializer):
     user = UserListSerializer()
-    photo = PhotoSerializer(read_only=True)
+    photo = PhotoSerializer()
 
     class Meta:
         model = Customer
-        fields = ('age', 'date_of_birth', 'user', 'photo')
-
-    def update(self, instance, validated_data):
-        instance.age = validated_data.get('age', instance.age)
-        instance.date_of_birth = validated_data.get('date_of_birth', instance.date_of_birth)
-        instance.save()
-
-        if validated_data.get('user', None):
-            user = User.objects.get(id=instance.user_id)
-            user.username = validated_data.get('user').get('username', user.username)
-            user.first_name = validated_data.get('user').get('first_name', user.first_name)
-            user.last_name = validated_data.get('user').get('last_name', user.last_name)
-            user.save()
-
-        return instance
+        fields = ('id', 'age', 'date_of_birth', 'user', 'photo')
 
 
 class CustomerCreateSerializer(CustomerSerializer):

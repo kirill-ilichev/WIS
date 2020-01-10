@@ -2,6 +2,8 @@ from rest_framework import parsers
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.generics import ListAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.response import Response
+
 from customers_app.helpers import add_point_to_photo, filter_and_sort_customers_by_query_params
 from customers_app.permissions import IsOwnerOrAdminOrReadOnly
 from customers_app.serializers import *
@@ -62,7 +64,16 @@ class CustomersDetailAPIView(RetrieveUpdateDestroyAPIView):
             "points": int
         }
     }
-    PUT, PATCH - Update info about customer
+    PUT, PATCH - Update info about customer in format:
+    {
+        "age": int,
+        "date_of_birth": date,
+        "first_name": str,
+        "last_name": str,
+        "username": str
+        "photo": file,
+    }
+
     DELETE - Delete customer
     """
     queryset = Customer.objects.all()
@@ -75,6 +86,39 @@ class CustomersDetailAPIView(RetrieveUpdateDestroyAPIView):
         instance.user.delete()
         instance.photo.delete()
         instance.delete()
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+
+        user_serializer = UserListSerializer(instance.user, data=request.data, partial=partial)
+        user_serializer.is_valid(raise_exception=True)
+        self.perform_update(user_serializer)
+
+        if bool(request.FILES):
+            if instance.photo:
+                photo_serializer = PhotoSerializer(instance.photo, data=request.FILES, partial=partial)
+                photo_serializer.is_valid(raise_exception=True)
+                self.perform_update(photo_serializer)
+            else:
+                photo_serializer = PhotoSerializer(data=request.FILES)
+                photo_serializer.is_valid(raise_exception=True)
+                self.perform_update(photo_serializer)
+
+                photo = photo_serializer.instance
+                instance.photo = photo
+                instance.photo_id = photo.id
+
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            # If 'prefetch_related' has been applied to a queryset, we need to
+            # forcibly invalidate the prefetch cache on the instance.
+            instance._prefetched_objects_cache = {}
+
+        return Response(serializer.data)
 
 
 class CustomersVotingAPIView(ListAPIView):
