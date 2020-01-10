@@ -59,16 +59,3 @@ def filter_and_sort_customers_by_query_params(query_params, customers):
             return sorted_customers
 
     return customers
-
-
-def add_point_to_photo(id_of_photo):
-    if not Photo.objects.filter(id=id_of_photo).exists():
-        return
-
-    photo = Photo.objects.get(id=id_of_photo)
-
-    if photo.points == Photo.max_points:
-        return
-
-    photo.add_point_to_photo()
-    return True

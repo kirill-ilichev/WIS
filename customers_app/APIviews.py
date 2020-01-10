@@ -1,10 +1,11 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import parsers
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.generics import ListAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.response import Response
 
-from customers_app.helpers import add_point_to_photo, filter_and_sort_customers_by_query_params
+from customers_app.helpers import filter_and_sort_customers_by_query_params
 from customers_app.permissions import IsOwnerOrAdminOrReadOnly
 from customers_app.serializers import *
 from customers_app.models import Customer, Photo
@@ -142,7 +143,8 @@ class CustomersVotingAPIView(ListAPIView):
 
     def post(self, request, *args, **kwargs):
         if request.data.get('id_of_photo', None):
-            add_point_to_photo(request.data.get('id_of_photo'))
+            photo = get_object_or_404(Photo, pk=request.data.get('id_of_photo'))
+            photo.add_point()
         return self.list(request, *args, **kwargs)
 
 

@@ -6,10 +6,10 @@ class Photo(models.Model):
     photo = models.ImageField()
     points = models.PositiveSmallIntegerField(blank=True, default=0)
 
-    def add_point_to_photo(self):
-        Photo.objects.select_for_update(). \
-            filter(pk=self.pk). \
-            update(points=models.F('points') + 1)
+    def add_point(self):
+        photo = Photo.objects.select_for_update().filter(pk=self.pk)
+        if photo.first().points < self.max_points:
+            photo.update(points=models.F('points') + 1)
 
     max_points = 10
 

@@ -2,12 +2,12 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
-from django.shortcuts import render, redirect, HttpResponseRedirect
+from django.shortcuts import render, redirect, HttpResponseRedirect, get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.views.generic import View, TemplateView, DetailView, DeleteView
 
 from customers_app.forms import CustomerForm,  UserForm, LoginForm
-from customers_app.helpers import are_passwords_match, add_point_to_photo, filter_and_sort_customers_by_query_params
+from customers_app.helpers import are_passwords_match, filter_and_sort_customers_by_query_params
 from customers_app.models import Customer, Photo
 
 
@@ -63,7 +63,8 @@ class CustomersVotingView(TemplateView):
 
         context = self.get_context_data(**kwargs)
 
-        add_point_to_photo(request.POST.get('id_of_photo'))
+        photo = get_object_or_404(Photo, pk=request.POST.get('id_of_photo'))
+        photo.add_point()
 
         return self.render_to_response(context)
 
