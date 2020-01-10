@@ -24,4 +24,10 @@ class Customer(models.Model):
     photo = models.OneToOneField(Photo, on_delete=models.SET_NULL, blank=True, null=True)
 
     def __str__(self):
-        return "{0} customer".format(self.pk)
+        return "{0} {1} {2}".format(self.user.username, self.user.first_name, self.user.last_name)
+
+    def delete(self, *args, **kwargs):
+        self.user.delete()
+        if self.photo:
+            self.photo.delete()
+        return super(self.__class__, self).delete(*args, **kwargs)

@@ -19,10 +19,13 @@ class HomePage(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['customers_list_url'] = reverse_lazy('customers-list')
-        context['customers_voting_url'] = reverse_lazy('customers-voting')
-        context['customers_auth_url'] = reverse_lazy('customers-auth')
-        context['customers_create_url'] = reverse_lazy('customers-create')
+        context.update({
+            'customers_list_url': reverse_lazy('customers-list'),
+            'customers_voting_url': reverse_lazy('customers-voting'),
+            'customers_auth_url': reverse_lazy('customers-auth'),
+            'customers_create_url': reverse_lazy('customers-create')
+        })
+
         user = self.request.user
         if user.is_authenticated:
             context['customers_detail_url'] = reverse_lazy('customers-detail', kwargs={'pk': user.id})
@@ -44,10 +47,10 @@ class CustomersVotingView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
-        context['photos'] = Photo.objects.all()
-        context['max_points'] = Photo.max_points
-
+        context.update({
+            'photos': Photo.objects.all(),
+            'max_points': Photo.max_points
+        })
         return context
 
     def get(self, request, *args, **kwargs):
@@ -131,7 +134,7 @@ class CustomersDeleteView(DeleteView):
         if self.request.user.is_staff:
             return obj
 
-        if not self.request.user.customer == obj:
+        if self.request.user.customer != obj:
             raise PermissionDenied
 
         return obj

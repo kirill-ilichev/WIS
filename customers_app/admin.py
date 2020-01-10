@@ -14,5 +14,16 @@ class PhotoAdmin(admin.ModelAdmin):
     form = PhotoForm
 
 
-admin.site.register(Customer)
+class CustomerAdmin(admin.ModelAdmin):
+    list_display = ['id', 'user', 'age', 'date_of_birth']
+
+    def delete_queryset(self, request, queryset):
+        """Given a queryset, delete it from the database."""
+        for customer in queryset:
+            customer.delete()
+
+        queryset.delete()
+
+
+admin.site.register(Customer, CustomerAdmin)
 admin.site.register(Photo, PhotoAdmin)
