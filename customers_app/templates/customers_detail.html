@@ -6,11 +6,11 @@
 </head>
 <body>
     <img src="{{ object.photo.photo.url }}" alt="img"><br>
-    {{object.user.username}}<br>
-    {{object.user.first_name}}<br>
-    {{object.user.last_name}}<br>
-    {{object.age}}<br>
-    {{object.date_of_birth}}<br>
+    Username - {{object.user.username}}<br>
+    First Name - {{object.user.first_name}}<br>
+    Last Name - {{object.user.last_name}}<br>
+    Age - {{object.age}} <br>
+    Date of birth - {{object.date_of_birth}}<br>
     <br>
     {% if user.is_staff %}
         <a href="{{delete_url}}">Удалить профиль?</a>

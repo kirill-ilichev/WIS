@@ -1,4 +1,8 @@
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
+
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django.db import models
 
 
@@ -13,13 +17,21 @@ class Photo(models.Model):
 
     max_points = 10
 
+    def __str__(self):
+        return "{}".format(self.photo.name)
+
+
+def validate_date_of_birth(value):
+    if value > datetime.now().date():
+        raise ValidationError('Date of birth cannot be greater than the current date')
+
 
 class Customer(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
-    age = models.PositiveSmallIntegerField()
+    age = models.PositiveSmallIntegerField(blank=True, null=False)
 
-    date_of_birth = models.DateField()
+    date_of_birth = models.DateField(validators=[validate_date_of_birth])
 
     photo = models.OneToOneField(Photo, on_delete=models.SET_NULL, blank=True, null=True)
 
@@ -31,3 +43,7 @@ class Customer(models.Model):
         if self.photo:
             self.photo.delete()
         return super(self.__class__, self).delete(*args, **kwargs)
+
+    def save(self, **kwargs):
+        self.age = relativedelta(datetime.now().date(), self.date_of_birth).years
+        return super().save(force_insert=False, force_update=False, using=None, update_fields=None)

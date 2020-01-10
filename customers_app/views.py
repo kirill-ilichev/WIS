@@ -6,9 +6,18 @@ from django.shortcuts import render, redirect, HttpResponseRedirect, get_object_
 from django.urls import reverse, reverse_lazy
 from django.views.generic import View, TemplateView, DetailView, DeleteView
 
-from customers_app.forms import CustomerForm,  UserForm, LoginForm
+from customers_app.forms import CustomerCreateForm,  UserForm, LoginForm
 from customers_app.helpers import are_passwords_match, filter_and_sort_customers_by_query_params
 from customers_app.models import Customer, Photo
+
+URLS = {
+    'home_url': reverse_lazy('home'),
+    'list_url': reverse_lazy('customers-list'),
+    'voting_url': reverse_lazy('customers-voting'),
+    'auth_url': reverse_lazy('customers-auth'),
+    'logout_url': reverse_lazy('customers-logout'),
+    'create_url': reverse_lazy('customers-create'),
+}
 
 
 class HomePage(TemplateView):
@@ -20,15 +29,15 @@ class HomePage(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({
-            'customers_list_url': reverse_lazy('customers-list'),
-            'customers_voting_url': reverse_lazy('customers-voting'),
-            'customers_auth_url': reverse_lazy('customers-auth'),
-            'customers_create_url': reverse_lazy('customers-create')
+            'list_url': URLS['list_url'],
+            'voting_url': URLS['voting_url'],
+            'auth_url': URLS['auth_url'],
+            'create_url': URLS['create_url']
         })
 
         user = self.request.user
         if user.is_authenticated:
-            context['customers_detail_url'] = reverse_lazy('customers-detail', kwargs={'pk': user.id})
+            context['detail_url'] = reverse_lazy('customers-detail', kwargs={'pk': user.customer.id})
 
         return context
 
@@ -114,7 +123,7 @@ class CustomersDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['delete_url'] = reverse_lazy('customers-delete', kwargs={'pk': self.get_object().pk})
-        context['logout_url'] = reverse_lazy('customers-logout')
+        context['logout_url'] = URLS['logout_url']
         return context
 
 
@@ -124,7 +133,7 @@ class CustomersDeleteView(DeleteView):
     """
     template_name = 'customers_confirm_delete.html'
     model = Customer
-    success_url = reverse_lazy('customers-auth')
+    success_url = URLS['home_url']
 
     def get_object(self, queryset=None):
         if not self.request.user.is_authenticated:
@@ -145,7 +154,7 @@ class CustomersCreateView(View):
     Render registration template
     """
     user_form_class = UserForm
-    customer_form_class = CustomerForm
+    customer_form_class = CustomerCreateForm
 
     template_name = 'customers_create.html'
 
@@ -155,7 +164,10 @@ class CustomersCreateView(View):
 
         return render(request,
                       self.template_name,
-                      {'user_form': self.user_form_class, 'customer_form': self.customer_form_class}
+                      {'user_form': self.user_form_class,
+                       'customer_form': self.customer_form_class,
+                       'auth_url': URLS['auth_url']
+                       }
                       )
 
     @transaction.atomic()
@@ -165,7 +177,7 @@ class CustomersCreateView(View):
 
         user_form = UserForm(request.POST)
 
-        customer_form = CustomerForm(request.POST, request.FILES or None)
+        customer_form = CustomerCreateForm(request.POST, request.FILES or None)
         if user_form.is_valid() and customer_form.is_valid():
             if are_passwords_match(user_form):
                 user_cleaned_data = user_form.cleaned_data
@@ -196,7 +208,7 @@ class CustomersAuthView(View):
     def get(self, request, *args, **kwargs):
         return render(request,
                       self.template_name,
-                      {'form': self.form_class, 'customers_create_url': reverse_lazy('customers-create')}
+                      {'form': self.form_class, 'create_url': URLS['create_url']}
                       )
 
     def post(self, request, *args, **kwargs):

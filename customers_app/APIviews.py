@@ -1,5 +1,5 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import parsers, status
+from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.generics import ListAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -65,9 +65,9 @@ class CustomersDetailAPIView(RetrieveUpdateDestroyAPIView):
             "points": int
         }
     }
+
     PUT, PATCH - Update info about customer:
     {
-        "age": int,
         "date_of_birth": date,
         "first_name": str,
         "last_name": str,
@@ -81,7 +81,6 @@ class CustomersDetailAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = CustomerSerializer
     authentication_classes = [JWTAuthentication]
     permission_classes = (IsAuthenticated, IsOwnerOrAdminOrReadOnly)
-    parser_classes = [parsers.MultiPartParser]
 
     def perform_destroy(self, instance):
         instance.user.delete()
@@ -98,6 +97,7 @@ class CustomersDetailAPIView(RetrieveUpdateDestroyAPIView):
 
         if bool(request.FILES):
             if instance.photo:
+                "If customer had photo before"
                 photo_serializer = PhotoSerializer(instance.photo, data=request.FILES, partial=partial)
                 photo_serializer.is_valid(raise_exception=True)
                 self.perform_update(photo_serializer)
@@ -133,6 +133,7 @@ class CustomersVotingAPIView(ListAPIView):
         },
         ...
     ]
+
     POST - Add point to certain photo
     {"id_of_photo": <int:id of photo>}
     """
@@ -152,7 +153,6 @@ class CustomersCreateAPIView(CreateAPIView):
     """
     POST - Create customer
     {
-        "age": int,
         "date_of_birth": date,
         "first_name": "string",
         "last_name": "string",

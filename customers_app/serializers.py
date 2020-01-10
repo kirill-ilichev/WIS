@@ -11,6 +11,7 @@ class PhotoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Photo
         fields = ('id', 'photo', 'points')
+        read_only_fields = ('points', )
 
 
 class UserListSerializer(serializers.ModelSerializer):
@@ -23,20 +24,19 @@ class UserListSerializer(serializers.ModelSerializer):
 
 
 class CustomerListSerializer(serializers.ModelSerializer):
-    user = UserListSerializer()
+    user = UserListSerializer(read_only=True)
 
     class Meta:
         model = Customer
         fields = ('id', 'age', 'date_of_birth', 'user')
+        read_only_fields = ('age', )
 
 
-class CustomerSerializer(serializers.ModelSerializer):
-    user = UserListSerializer(read_only=True)
+class CustomerSerializer(CustomerListSerializer):
     photo = PhotoSerializer(read_only=True)
 
-    class Meta:
-        model = Customer
-        fields = ('id', 'age', 'date_of_birth', 'user', 'photo')
+    class Meta(CustomerListSerializer.Meta):
+        fields = CustomerListSerializer.Meta.fields + ('photo', )
 
 
 class CustomerCreateSerializer(CustomerSerializer):

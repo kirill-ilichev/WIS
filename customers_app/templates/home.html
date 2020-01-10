@@ -6,13 +6,13 @@
 </head>
 <body>
     {% if user.is_authenticated %}
-        <a href="{{ customers_list_url }}">Список всех клиентов</a><br>
-        <a href="{{ customers_voting_url }}">Страница голосования</a><br>
-        <a href="{{ customers_detail_url }}">Ваша страница</a><br>
+        <a href="{{ list_url }}">List of all customers</a><br>
+        <a href="{{ voting_url }}">Voting page</a><br>
+        <a href="{{ detail_url }}">Your account's page</a><br>
     {% endif %}
     {% if user.is_staff %}
-        <a href="{{ customers_create_url }}">Страница создания клиента</a><br>
+        <a href="{{ create_url }}">Customers create page</a><br>
     {% endif %}
-    <a href="{{ customers_auth_url }}">Страница авторизации</a>
+    <a href="{{ auth_url }}">Auth page</a>
 </body>
 </html>

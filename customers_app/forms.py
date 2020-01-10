@@ -6,6 +6,7 @@ from customers_app.models import Customer
 
 class LoginForm(forms.Form):
     username = forms.CharField()
+
     password = forms.CharField(widget=forms.PasswordInput)
     confirm_password = forms.CharField(widget=forms.PasswordInput())
 
@@ -19,13 +20,16 @@ class UserForm(forms.ModelForm):
         model = User
         fields = ['first_name', 'last_name', 'username', 'email', 'password']
         widgets = {
-            'password': forms.PasswordInput(),
+            'password': forms.PasswordInput()
         }
 
 
-class CustomerForm(forms.ModelForm):
+class CustomerCreateForm(forms.ModelForm):
     photo = forms.ImageField()
 
     class Meta:
         model = Customer
-        fields = ['age', 'date_of_birth']
+        fields = ['date_of_birth']
+        widgets = {
+            'date_of_birth': forms.TextInput(attrs={'placeholder': 'DD.MM.YYYY'})
+        }
