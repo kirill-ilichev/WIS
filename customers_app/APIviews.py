@@ -1,5 +1,5 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import parsers
+from rest_framework import parsers, status
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.generics import ListAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -65,7 +65,7 @@ class CustomersDetailAPIView(RetrieveUpdateDestroyAPIView):
             "points": int
         }
     }
-    PUT, PATCH - Update info about customer in format:
+    PUT, PATCH - Update info about customer:
     {
         "age": int,
         "date_of_birth": date,
@@ -110,16 +110,16 @@ class CustomersDetailAPIView(RetrieveUpdateDestroyAPIView):
                 instance.photo = photo
                 instance.photo_id = photo.id
 
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
+        customer_serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        customer_serializer.is_valid(raise_exception=True)
+        self.perform_update(customer_serializer)
 
         if getattr(instance, '_prefetched_objects_cache', None):
             # If 'prefetch_related' has been applied to a queryset, we need to
             # forcibly invalidate the prefetch cache on the instance.
             instance._prefetched_objects_cache = {}
 
-        return Response(serializer.data)
+        return Response(customer_serializer.data)
 
 
 class CustomersVotingAPIView(ListAPIView):
@@ -154,18 +154,37 @@ class CustomersCreateAPIView(CreateAPIView):
     {
         "age": int,
         "date_of_birth": date,
-        "user": {
-            "first_name": "string",
-            "last_name": "string",
-            "username": "string"
-        },
+        "first_name": "string",
+        "last_name": "string",
+        "username": "string"
         "password": "string",
         "confirm_password": "string",
-        "photo": {
-            "photo": file,
-        }
+        "photo": file
     }
     """
     permission_classes = (IsAdminUser, )
     serializer_class = CustomerCreateSerializer
     authentication_classes = [JWTAuthentication]
+
+    def create(self, request, *args, **kwargs):
+
+        user_serializer = UserListSerializer(data=request.data)
+        user_serializer.is_valid(raise_exception=True)
+
+        photo_serializer = PhotoSerializer(data=request.FILES)
+        photo_serializer.is_valid(raise_exception=True)
+
+        customer_serializer = CustomerCreateSerializer(data=request.data)
+        customer_serializer.is_valid(raise_exception=True)
+
+        self.perform_create(user_serializer)
+        self.perform_create(photo_serializer)
+
+        customer_serializer.validated_data.update({"user": user_serializer.instance,
+                                                   "photo": photo_serializer.instance})
+
+        self.perform_create(customer_serializer)
+
+        headers = self.get_success_headers(customer_serializer.data)
+
+        return Response(customer_serializer.data, status=status.HTTP_201_CREATED, headers=headers)

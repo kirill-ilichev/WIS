@@ -18,6 +18,8 @@ class UserListSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'first_name', 'last_name', 'username')
+        extra_kwargs = {'first_name': {'required': True},
+                        'last_name': {'required': True}}
 
 
 class CustomerListSerializer(serializers.ModelSerializer):
@@ -29,8 +31,8 @@ class CustomerListSerializer(serializers.ModelSerializer):
 
 
 class CustomerSerializer(serializers.ModelSerializer):
-    user = UserListSerializer()
-    photo = PhotoSerializer()
+    user = UserListSerializer(read_only=True)
+    photo = PhotoSerializer(read_only=True)
 
     class Meta:
         model = Customer
@@ -70,13 +72,13 @@ class CustomerCreateSerializer(CustomerSerializer):
         return super().validate(data)
 
     def create(self, validated_data):
+        photo = validated_data.pop('photo')
 
-        user_data = validated_data.pop('user')
-
-        user = User.objects.create_user(password=validated_data.pop('password'),
-                                        **user_data)
+        user = validated_data.pop('user')
+        user.set_password(validated_data.pop('password'))
+        user.save()
 
         validated_data.pop('confirm_password')
-        customer = Customer.objects.create(**validated_data, user=user)
 
+        customer = Customer.objects.create(user=user, photo=photo, **validated_data)
         return customer
