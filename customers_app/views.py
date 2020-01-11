@@ -60,7 +60,7 @@ class CustomersVotingView(TemplateView):
 
         context = super().get_context_data(**kwargs)
         context.update({
-            'photos': Photo.objects.all(),
+            'photos': Photo.objects.filter(customer__isnull=False),
             'max_points': Photo.max_points
         })
         return context
