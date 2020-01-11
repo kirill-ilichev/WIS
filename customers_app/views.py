@@ -6,7 +6,7 @@ from django.shortcuts import render, redirect, HttpResponseRedirect, get_object_
 from django.urls import reverse, reverse_lazy
 from django.views.generic import View, TemplateView, DetailView, DeleteView
 
-from customers_app.forms import CustomerCreateForm,  UserForm, LoginForm
+from customers_app.forms import LoginForm, UserCreateForm, CustomerForm
 from customers_app.helpers import are_passwords_match, filter_and_sort_customers_by_query_params
 from customers_app.models import Customer, Photo
 
@@ -55,6 +55,9 @@ class CustomersVotingView(TemplateView):
     template_name = "customers_voting.html"
 
     def get_context_data(self, **kwargs):
+        if not self.request.user.is_authenticated:
+            raise PermissionDenied
+
         context = super().get_context_data(**kwargs)
         context.update({
             'photos': Photo.objects.all(),
@@ -63,16 +66,10 @@ class CustomersVotingView(TemplateView):
         return context
 
     def get(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            raise PermissionDenied
-
         context = self.get_context_data(**kwargs)
         return self.render_to_response(context)
 
     def post(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            raise PermissionDenied
-
         context = self.get_context_data(**kwargs)
 
         photo = get_object_or_404(Photo, pk=request.POST.get('id_of_photo'))
@@ -89,6 +86,9 @@ class CustomersListView(TemplateView):
     template_name = "customers_list.html"
 
     def get_context_data(self, **kwargs):
+        if not self.request.user.is_authenticated:
+            raise PermissionDenied
+
         context = super().get_context_data(**kwargs)
 
         customers = Customer.objects.all()
@@ -96,13 +96,6 @@ class CustomersListView(TemplateView):
 
         context['customers'] = filter_and_sort_customers_by_query_params(query_params, customers)
         return context
-
-    def get(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            raise PermissionDenied
-
-        context = self.get_context_data(**kwargs)
-        return self.render_to_response(context)
 
 
 class CustomersDetailView(DetailView):
@@ -113,7 +106,6 @@ class CustomersDetailView(DetailView):
     model = Customer
 
     def get_object(self, queryset=None):
-
         if not self.request.user.is_authenticated:
             raise PermissionDenied
 
@@ -122,8 +114,12 @@ class CustomersDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['delete_url'] = reverse_lazy('customers-delete', kwargs={'pk': self.get_object().pk})
-        context['logout_url'] = URLS['logout_url']
+        pk = self.get_object().pk
+
+        context.update({
+            'delete_url': reverse_lazy('customers-delete', kwargs={'pk': pk}),
+            'logout_url': URLS['logout_url']
+        })
         return context
 
 
@@ -153,8 +149,8 @@ class CustomersCreateView(View):
     """
     Render registration template
     """
-    user_form_class = UserForm
-    customer_form_class = CustomerCreateForm
+    user_form_class = UserCreateForm
+    customer_form_class = CustomerForm
 
     template_name = 'customers_create.html'
 
@@ -175,9 +171,9 @@ class CustomersCreateView(View):
         if not request.user.is_staff:
             raise PermissionDenied
 
-        user_form = UserForm(request.POST)
+        user_form = UserCreateForm(request.POST)
 
-        customer_form = CustomerCreateForm(request.POST, request.FILES or None)
+        customer_form = CustomerForm(request.POST, request.FILES or None)
         if user_form.is_valid() and customer_form.is_valid():
             if are_passwords_match(user_form):
                 user_cleaned_data = user_form.cleaned_data

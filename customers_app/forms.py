@@ -14,17 +14,23 @@ class LoginForm(forms.Form):
 class UserForm(forms.ModelForm):
     first_name = forms.CharField()
     last_name = forms.CharField()
-    confirm_password = forms.CharField(widget=forms.PasswordInput())
 
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'username', 'email', 'password']
+        fields = ['username', 'email']
+
+
+class UserCreateForm(UserForm):
+    confirm_password = forms.CharField(widget=forms.PasswordInput())
+
+    class Meta(UserForm.Meta):
+        fields = UserForm.Meta.fields + ['password', 'confirm_password']
         widgets = {
             'password': forms.PasswordInput()
         }
 
 
-class CustomerCreateForm(forms.ModelForm):
+class CustomerForm(forms.ModelForm):
     photo = forms.ImageField()
 
     class Meta:

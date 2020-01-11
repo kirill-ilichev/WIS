@@ -9,13 +9,15 @@
     Username - {{object.user.username}}<br>
     First Name - {{object.user.first_name}}<br>
     Last Name - {{object.user.last_name}}<br>
+    Email - {{ object.user.email }}<br>
     Age - {{object.age}} <br>
     Date of birth - {{object.date_of_birth}}<br>
     <br>
     {% if user.is_staff %}
-        <a href="{{delete_url}}">Удалить профиль?</a>
+        <a href="{{delete_url}}">Want to delete account?</a>
+        <br>
     {% endif %}
     <br>
-    <a href="{{logout_url}}">Хотите выйти из аккаунта?</a>
+    <a href="{{logout_url}}">Want to logout?</a>
 </body>
 </html>

@@ -30,9 +30,9 @@ def export_customers_details_in_xlsx(request):
     for row, customer in enumerate(customers, 1):
         for col, field in enumerate(fields_for_writing):
             if field in get_model_fields_list(User):
-                ws.write(row, col, getattr(customer.user, field))
+                ws.write(row, col, str(getattr(customer.user, field)))
             else:
-                ws.write(row, col, getattr(customer, field))
+                ws.write(row, col, str(getattr(customer, field)))
 
     wb.save(excelfile)
 
