@@ -16,11 +16,14 @@ class CustomersListAPIView(ListAPIView):
     GET - Returns info about customers
     [
         {
+        "id": int
         "age": int,
         "date_of_birth": date,
         "user": {
+            "id": int,
             "first_name": string,
-            "last_name": string
+            "last_name": string,
+            "username": string
         },
         ...
 
@@ -53,26 +56,29 @@ class CustomersDetailAPIView(RetrieveUpdateDestroyAPIView):
     """
     GET - Returns info about customers
     {
+        "id": int,
         "age": int,
         "date_of_birth": date,
         "user": {
+            "id": int,
             "username": string,
             "first_name": string,
             "last_name": string
         },
         "photo": {
+            "id": int,
             "photo": url,
             "points": int
         }
     }
 
-    PUT, PATCH - Update info about customer:
+    PATCH - Update info about customer:
     {
         "date_of_birth": date,
         "first_name": str,
         "last_name": str,
         "username": str
-        "photo": file,
+        "photo": file
     }
 
     DELETE - Delete customer
