@@ -2,7 +2,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
-from django.shortcuts import render, redirect, HttpResponseRedirect, get_object_or_404
+from django.shortcuts import render, redirect, HttpResponseRedirect, get_object_or_404, HttpResponse
 from django.urls import reverse, reverse_lazy
 from django.views.generic import View, TemplateView, DetailView, DeleteView
 
@@ -40,6 +40,19 @@ class HomePage(TemplateView):
             context['detail_url'] = reverse_lazy('customers-detail', kwargs={'pk': user.customer.id})
 
         return context
+
+    def get(self, request, *args, **kwargs):
+
+        user = request.user
+        if user.is_authenticated:
+            try:
+                user.customer
+            except User.customer.RelatedObjectDoesNotExist:
+                return HttpResponse('User is not a customer. If you are admin - create Customer model for yourself. '
+                                    'If you are not admin - say admin to create Customer model for you ')
+
+        context = self.get_context_data(**kwargs)
+        return self.render_to_response(context)
 
 
 def logout_view(request):
